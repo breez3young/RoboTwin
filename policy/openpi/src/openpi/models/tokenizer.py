@@ -11,7 +11,8 @@ class PaligemmaTokenizer:
     def __init__(self, max_len: int = 48):
         self._max_len = max_len
 
-        path = download.maybe_download("gs://big_vision/paligemma_tokenizer.model", gs={"token": "anon"})
+        # path = download.maybe_download("gs://big_vision/paligemma_tokenizer.model", gs={"token": "anon"})
+        path = download.maybe_download("/gemini/space/huggingface_cache/hub/models--google--paligemma-3b-pt-224/snapshots/35e4f46485b4d07967e7e9935bc3786aad50687c/tokenizer.model")
         with path.open("rb") as f:
             self._tokenizer = sentencepiece.SentencePieceProcessor(model_proto=f.read())
 

@@ -20,6 +20,9 @@ from argparse import ArgumentParser
 current_file_path = os.path.abspath(__file__)
 parent_directory = os.path.dirname(current_file_path)
 
+# LEROBOT_PI0_CHECKPOINT_PATH = "/gemini/space/users/zhangyang/lerobot_outputs/train_pi0/robotwin_jax_transforms_all_tasks_50ep/25-06-30_01-08-57_pi0_gpu4_ck50_lr3e-5_bs12_s1600K_seed42/checkpoints"
+LEROBOT_PI0_CHECKPOINT_PATH = "/gemini/space/users/zhangyang/lerobot_outputs/train_pi0/robotwin_new_transforms_all_tasks_50ep/25-07-05_21-51-51_pi0_gpu2_ck50_lr3e-5_bs12_s1600K_seed42/checkpoints"
+
 def class_decorator(task_name):
     envs_module = importlib.import_module(f'envs.{task_name}')
     try:
@@ -80,15 +83,24 @@ def main(usr_args):
     task = class_decorator(args['task_name'])
     args['model_name'] = model_name
     args['checkpoint_id'] = checkpoint_num
+    args['eval_video_log'] = usr_args.eval_video_log
 
     st_seed = 100000 * (1+seed)
     suc_nums = []
     test_num = 100
     topk = 1
     
-    model = PI0(task_name,train_config_name,model_name,checkpoint_num)
+    if usr_args.use_lerobot_pi0:
+        model = Lerobot_PI0(task_name, f"{LEROBOT_PI0_CHECKPOINT_PATH}/0{checkpoint_num}/pretrained_model")
+    else:
+        model = PI0(task_name,train_config_name,model_name,checkpoint_num)
    
+    # 由于一个任务里面language instruction有多个选择，所以需要随机选择一个instruction
     model.random_set_language()
+
+    # 测试策略的主循环
+    ## 这里task是envs.xxx等各种具体任务，其基类是envs.base_task.Base_task
+    ## 如果需要修改如何应用策略在这些任务环境，只需要到Base_task里面修改apply_pi函数
     st_seed, suc_num = test_policy(task, args, model, st_seed, test_num=test_num)
     suc_nums.append(suc_num)
 
@@ -117,6 +129,9 @@ def main(usr_args):
     
 
 def test_policy(Demo_class, args, policy, st_seed, test_num=20):
+    '''
+    test_num: 测试的次数
+    '''
     expert_check = True
     task_name = args["task_name"]
     print("Task name: ", args["task_name"])
@@ -155,6 +170,8 @@ def test_policy(Demo_class, args, policy, st_seed, test_num=20):
             succ_seed +=1
             suc_test_seed_list.append(now_seed)
         else:
+            # 如果专家motion planner都无法完成这个seed的设置，则跳过这个seed的测评
+            # 这里保证了对应这个seed是能够通过motion planner完成的，是可以成功的
             now_seed += 1
             args['render_freq'] = render_freq
             continue
@@ -190,6 +207,8 @@ if __name__ == "__main__":
     parser.add_argument('model_name', type=str)
     parser.add_argument('checkpoint_num', type=int)
     parser.add_argument('seed', type=int, default=0)
+    parser.add_argument('--eval-video-log', action='store_true', default=False)
+    parser.add_argument('--use_lerobot_pi0', action='store_true', default=False)
     usr_args = parser.parse_args()
-    
+
     main(usr_args)

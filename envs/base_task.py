@@ -20,6 +20,16 @@ import cv2
 import torch
 import yaml
 
+
+## debug
+from PIL import Image
+import numpy as np
+
+def save_image(array, path = 'output.png'):
+    image = Image.fromarray(array)
+    image.save(path)
+##
+
 class Base_task(gym.Env):
 
     DEFAULT_ACTOR_DATA = {
@@ -1916,7 +1926,7 @@ class Base_task(gym.Env):
         eval_video_log = args['eval_video_log']
         camera_config = self.get_camera_config(str(args['head_camera_type']))
         video_size = str(camera_config['w']) + 'x' + str(camera_config['h']) # TODO
-        save_dir = 'PI/' + str(args['task_name']) + '_' + str(args['head_camera_type']) + '_' + str(args['model_name']) + '/' + str(args['checkpoint_id']) + '_seed' + str(args['expert_seed']) # TODO
+        save_dir = 'PI_new_transforms/' + str(args['task_name']) + '_' + str(args['head_camera_type']) + '_' + str(args['model_name']) + '/' + str(args['checkpoint_id']) + '_seed' + str(args['expert_seed']) # TODO
 
         if eval_video_log:
             import subprocess
@@ -1948,6 +1958,8 @@ class Base_task(gym.Env):
         while step_cnt < self.step_lim:
             observation = self.get_obs()
 
+            ## 这里将原来为rgb的图像转换为了bgr图像？为什么这么做
+            ## 因为转换出来的lerobot数据image就是bgr的，所以才这样转换
             observation['observation']['head_camera']['rgb'] = observation['observation']['head_camera']['rgb'][:,:,::-1]
             observation['observation']['left_camera']['rgb'] = observation['observation']['left_camera']['rgb'][:,:,::-1]
             observation['observation']['right_camera']['rgb'] = observation['observation']['right_camera']['rgb'][:,:,::-1]
@@ -1959,6 +1971,8 @@ class Base_task(gym.Env):
             if step_cnt == 0:
                 model.update_observation_window(input_rgb_arr, input_state)
             pred_actions = model.get_action()
+
+            # import ipdb; ipdb.set_trace()
 
             take_actions = pred_actions[:30]
 

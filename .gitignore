@@ -13,6 +13,10 @@ task_config/seeds/*.txt
 run_all_task.sh
 task_config/*
 *.zip
+eval_video/
+vis_imgs/
+result*
+.cache
 
 # Code Generation
 robotwin.py

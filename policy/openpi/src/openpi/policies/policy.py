@@ -41,18 +41,21 @@ class Policy(BasePolicy):
     def infer(self, obs: dict) -> dict:  # type: ignore[misc]
         # Make a copy since transformations may modify the inputs in place.
         inputs = jax.tree.map(lambda x: x, obs)
+        # import ipdb; ipdb.set_trace()
         inputs = self._input_transform(inputs)
+        # import ipdb; ipdb.set_trace()
         # Make a batch and convert to jax.Array.
         inputs = jax.tree.map(lambda x: jnp.asarray(x)[np.newaxis, ...], inputs)
 
         self._rng, sample_rng = jax.random.split(self._rng)
         outputs = {
-            "state": inputs["state"],
+            "state": inputs["state"],   # 注意，这个inputs['state']已经经过normalize了，所以在下面的_output_transform，是先分别对actions和state都进行unnormalize，然后再进行delta2abs
             "actions": self._sample_actions(sample_rng, _model.Observation.from_dict(inputs), **self._sample_kwargs),
         }
 
         # Unbatch and convert to np.ndarray.
         outputs = jax.tree.map(lambda x: np.asarray(x[0, ...]), outputs)
+        # import ipdb; ipdb.set_trace()
         return self._output_transform(outputs)
 
     @property
