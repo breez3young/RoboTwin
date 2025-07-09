@@ -91,7 +91,7 @@ def main(usr_args):
     topk = 1
     
     if usr_args.use_lerobot_pi0:
-        model = Lerobot_PI0(task_name, f"{LEROBOT_PI0_CHECKPOINT_PATH}/0{checkpoint_num}/pretrained_model")
+        model = Lerobot_PI0(task_name, f"{LEROBOT_PI0_CHECKPOINT_PATH}/{'00' if checkpoint_num < 100000 else '0'}{checkpoint_num}/pretrained_model")
     else:
         model = PI0(task_name,train_config_name,model_name,checkpoint_num)
    
@@ -112,7 +112,9 @@ def main(usr_args):
 
     with open(file_path, 'w') as file:
         file.write(f'Timestamp: {current_time}\n\n')
-
+        prefix = '00' if checkpoint_num < 100000 else '0'
+        path = f'{LEROBOT_PI0_CHECKPOINT_PATH}/{prefix}{checkpoint_num}/pretrained_model'
+        file.write(f'Checkpoint path: {path}\n')
         file.write(f'Checkpoint Num: {checkpoint_num}\n')
         
         file.write('Successful Rate of Diffenent checkpoints:\n')

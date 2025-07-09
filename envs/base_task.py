@@ -1925,8 +1925,8 @@ class Base_task(gym.Env):
 
         eval_video_log = args['eval_video_log']
         camera_config = self.get_camera_config(str(args['head_camera_type']))
-        video_size = str(camera_config['w']) + 'x' + str(camera_config['h']) # TODO
-        save_dir = 'PI_new_transforms/' + str(args['task_name']) + '_' + str(args['head_camera_type']) + '_' + str(args['model_name']) + '/' + str(args['checkpoint_id']) + '_seed' + str(args['expert_seed']) # TODO
+        video_size = str(camera_config['w']) + 'x' + str(camera_config['h']) # TODO        
+        save_dir = 'lerobot_pi0/' + str(args['task_name']) + '_' + str(args['head_camera_type']) + '_' + str(args['model_name']) + f"_ckpt_{args['checkpoint_id'] // 1000}k" + '/' + 'seed' + str(args['expert_seed']) # TODO
 
         if eval_video_log:
             import subprocess
